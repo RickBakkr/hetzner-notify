@@ -39,7 +39,7 @@ if ($err) {
 }
 
 arsort($sortedList);
-$sortedList = array_slice($sortedList, 0, 10, true);
+$sortedList = array_slice($sortedList, 0, $maxList, true);
 $i = 0;
 foreach($sortedList as $keyId => $bench) {
   $server = $data[$keyId];
@@ -64,10 +64,12 @@ if(!isset($message)) {
   // Exit the script, do not fire the POST..
   exit();
 } else {
-  $message .= PHP_EOL . PHP_EOL;
-  $message .= '-------------------------------------' . PHP_EOL;
-  $message .= 'Hetzner Serverboerse notifier bot for Rocket Chat has been written by Rick Bakker' . PHP_EOL;
-  $message .= '-------------------------------------' . PHP_EOL;
+  if(isset($thanks) && $thanks !== false) {
+    $message .= PHP_EOL . PHP_EOL;
+    $message .= '-------------------------------------' . PHP_EOL;
+    $message .= 'Hetzner Serverboerse notifier bot for Rocket Chat has been written by Rick Bakker' . PHP_EOL;
+    $message .= '-------------------------------------' . PHP_EOL;
+  }
   // We have some message to share, POST it to RC.
   $client = new \RocketChatPhp\Client($host, $token);
   $client->payload([
