@@ -5,7 +5,7 @@ require 'config.php';
 $curl = curl_init();
 
 curl_setopt_array($curl, array(
-  CURLOPT_URL => "https://www.hetzner.com/a_hz_serverboerse/live_data.json?m=" . microtime(),
+  CURLOPT_URL => "https://www.hetzner.com/a_hz_serverboerse/live_data.json",
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_ENCODING => "",
   CURLOPT_MAXREDIRS => 10,
