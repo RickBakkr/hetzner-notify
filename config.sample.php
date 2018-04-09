@@ -10,4 +10,4 @@ $maxPrice = 27; // Maximum price for a server in the auction that you wish to be
 $minRam = 16; // Minimum amount of RAM (in GB) a server must have in order for you to be notified.
 
 $maxList = 10; // Maximum amount of new servers to show. SETTING THIS VALUE TOO HIGH WILL CAUSE HIGH CPU USAGE ON THE ROCKET.CHAT CLIENT AND SERVER!
-$thanks = true; // Whether you wish to give credit to me (the creator of this script) via a HTTP header.
+$thanks = true; // Whether you wish to give credit to me (the creator of this script) via a small footer in each message sent by the bot.
