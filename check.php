@@ -48,11 +48,15 @@ foreach($sortedList as $keyId => $bench) {
     $message .= $mention . PHP_EOL . PHP_EOL;
     $i = 1;
   }
+  $flag = ':de:';
+  if ($server->datacenter[1] == 'HEL') {
+    $flag = ':fi:';
+  }
   $message .= '** HETZNER DEAL FOUND **' . PHP_EOL;
   $message .= $server->freetext . PHP_EOL;
   $message .= 'CPU Benchmark: ' . $server->cpu_benchmark . PHP_EOL;
   $message .= PHP_EOL;
-  $message .= 'Dedicated is located in: ' . array_shift($server->datacenter) . PHP_EOL;
+  $message .= 'Dedicated is located in: ' . array_shift($server->datacenter) . ' ' . $flag . PHP_EOL;
   $message .= PHP_EOL;
   $message .= 'Cost is: €' . $server->price . ' (approx. €'  . $server->price*$vatPRC  . ' incl. ' . $vat . '% MwSt) ' . PHP_EOL;
   $message .= PHP_EOL;
