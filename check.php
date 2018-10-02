@@ -11,6 +11,7 @@ curl_setopt_array($curl, array(
   CURLOPT_MAXREDIRS => 10,
   CURLOPT_TIMEOUT => 30,
   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13',
   CURLOPT_CUSTOMREQUEST => "GET",
   CURLOPT_HTTPHEADER => array(
     "Cache-Control: no-cache",
@@ -38,6 +39,8 @@ if ($err) {
   }
 }
 
+$msgArray = [];
+
 arsort($sortedList);
 $sortedList = array_slice($sortedList, 0, $maxList, true);
 $i = 0;
@@ -45,38 +48,52 @@ foreach($sortedList as $keyId => $bench) {
   $server = $data[$keyId];
   if($i == 0) {
     $message = '';
-    $message .= $mention . PHP_EOL . PHP_EOL;
+    $message .= $mention;
     $i = 1;
   }
   $flag = ':de:';
   if ($server->datacenter[1] == 'HEL') {
     $flag = ':fi:';
   }
-  $message .= '** HETZNER DEAL FOUND **' . PHP_EOL;
-  $message .= $server->freetext . PHP_EOL;
-  $message .= 'CPU Benchmark: ' . $server->cpu_benchmark . PHP_EOL;
-  $message .= PHP_EOL;
-  $message .= 'Dedicated is located in: ' . array_shift($server->datacenter) . ' ' . $flag . PHP_EOL;
-  $message .= PHP_EOL;
-  $message .= 'Cost is: €' . $server->price . ' (approx. €'  . $server->price*$vatPRC  . ' incl. ' . $vat . '% MwSt) ' . PHP_EOL;
-  $message .= PHP_EOL;
-  $message .= 'https://robot.your-server.de/order/marketConfirm/' . $server->key . PHP_EOL;
-  $message .= PHP_EOL . PHP_EOL;
+  $msg = '** HETZNER DEAL FOUND **' . PHP_EOL;
+  $msg .= $server->freetext . PHP_EOL;
+  $msg .= 'CPU Benchmark: ' . $server->cpu_benchmark . PHP_EOL;
+  $msg .= PHP_EOL;
+  $msg .= PHP_EOL;
+  $msg .= 'Cost is: €' . $server->price . ' (approx. €'  . $server->price*$vatPRC  . ' incl. ' . $vat . '% MwSt) ' . PHP_EOL;
+  $msg .= PHP_EOL;
+  $msg .= 'https://robot.your-server.de/order/marketConfirm/' . $server->key . PHP_EOL;
+  $msg .= PHP_EOL . PHP_EOL;
+  $msgArray[] = $msg;
 }
 
-if(!isset($message)) {
-  // Exit the script, do not fire the POST..
+if(count($msgArray) < 0) {
+  // Exit the script, do not fire..
   exit();
 } else {
   if(isset($thanks) && $thanks !== false) {
     $message .= PHP_EOL . PHP_EOL;
     $message .= '-------------------------------------' . PHP_EOL;
-    $message .= 'Hetzner Serverboerse notifier bot for Rocket Chat has been written by Rick Bakker' . PHP_EOL;
+    $message .= 'Hetzner Serverboerse notifier bot has been written by Rick Bakker' . PHP_EOL;
     $message .= '-------------------------------------' . PHP_EOL;
   }
   // We have some message to share, POST it to RC.
-  $client = new \RocketChatPhp\Client($host, $token);
-  $client->payload([
-      'text' => $message
-  ]);
+  if($client == 'rocketchat') {
+    $client = new \RocketChatPhp\Client($host, $token);
+    $client->payload([
+        'text' => $message
+    ]);
+  } elseif($client == 'discord') {
+    $webhook = new \DiscordWebhooks\Client($discord_webhook_url);
+    $embed = new \DiscordWebhooks\Embed();
+    $embed->description($message);
+    $message .= 'I have found deals you might find interesting!';
+    $queue = $webhook->username('Hetzner Notifier Bot')->message($message);
+    foreach($msgArray as $message) {
+      $embed = new \DiscordWebhooks\Embed();
+      $embed->description($message);
+      $queue = $queue->embed($embed);
+    }
+    $queue->send();
+  }
 }
