@@ -1,5 +1,6 @@
 {
     "require": {
-        "bt/rocketchat-php": "^1.1"
+        "bt/rocketchat-php": "^1.1",
+        "nopjmp/discord-webhooks": "^0.3.1"
     }
 }
