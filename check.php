@@ -59,6 +59,7 @@ foreach($sortedList as $keyId => $bench) {
   $msg .= $server->freetext . PHP_EOL;
   $msg .= 'CPU Benchmark: ' . $server->cpu_benchmark . PHP_EOL;
   $msg .= PHP_EOL;
+  $msg .= 'Dedicated is located in: ' . array_shift($server->datacenter) . ' ' . $flag . PHP_EOL;	
   $msg .= PHP_EOL;
   $msg .= 'Cost is: €' . $server->price . ' (approx. €'  . $server->price*$vatPRC  . ' incl. ' . $vat . '% MwSt) ' . PHP_EOL;
   $msg .= PHP_EOL;
