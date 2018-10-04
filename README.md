@@ -37,3 +37,7 @@ The Hetzner-Notify bot requires an incoming webhook in order to communicate with
 ### The bot doesn't work!
 
 I can't help you without more info. If you think it's a bug with the code, please open an issue. Maybe your Rocket.Chat webhook config is incorrect, or your config for this bot is incorrect.
+
+## Caching
+
+Please make sure to create a file named `cache.txt` if you plan to use the cached functionalities. Note: this may require you to set custom permissions in order for the script to have persmissions to write the cached auction IDs.

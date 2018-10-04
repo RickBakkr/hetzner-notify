@@ -2,6 +2,8 @@
 require 'vendor/autoload.php';
 require 'config.php';
 
+$cache = "";
+
 $curl = curl_init();
 
 curl_setopt_array($curl, array(
@@ -26,6 +28,11 @@ $vatPRC = (100+$vat) / 100;
 
 curl_close($curl);
 
+if($caching && file_exists('cache.txt')) {
+  $contents = file_get_contents('cache.txt');
+  $items = explode(PHP_EOL, $contents);
+}
+
 if ($err) {
   echo "cURL Error #:" . $err;
 } else {
@@ -33,8 +40,11 @@ if ($err) {
   $data = $data->server;
   $sortedList = [];
   foreach($data as $keyId => $server) {
+    $cache .= $server->key . PHP_EOL;
     if($server->ram >= $minRam && $server->price <= $maxPrice) {
-      $sortedList[$keyId] = $server->cpu_benchmark;
+        if(!$caching or !in_array($server->key, $items)) {
+          $sortedList[$keyId] = $server->cpu_benchmark;
+        }
     }
   }
 }
@@ -59,7 +69,7 @@ foreach($sortedList as $keyId => $bench) {
   $msg .= $server->freetext . PHP_EOL;
   $msg .= 'CPU Benchmark: ' . $server->cpu_benchmark . PHP_EOL;
   $msg .= PHP_EOL;
-  $msg .= 'Dedicated is located in: ' . array_shift($server->datacenter) . ' ' . $flag . PHP_EOL;	
+  $msg .= 'Dedicated is located in: ' . array_shift($server->datacenter) . ' ' . $flag . PHP_EOL;
   $msg .= PHP_EOL;
   $msg .= 'Cost is: €' . $server->price . ' (approx. €'  . $server->price*$vatPRC  . ' incl. ' . $vat . '% MwSt) ' . PHP_EOL;
   $msg .= PHP_EOL;
@@ -68,18 +78,23 @@ foreach($sortedList as $keyId => $bench) {
   $msgArray[] = $msg;
 }
 
-if(count($msgArray) < 0) {
+if(count($msgArray) < 1) {
   // Exit the script, do not fire..
   exit();
 } else {
-  if(isset($thanks) && $thanks !== false) {
-    $message .= PHP_EOL . PHP_EOL;
-    $message .= '-------------------------------------' . PHP_EOL;
-    $message .= 'Hetzner Serverboerse notifier bot has been written by Rick Bakker' . PHP_EOL;
-    $message .= '-------------------------------------' . PHP_EOL;
-  }
   // We have some message to share, POST it to RC.
   if($client == 'rocketchat') {
+    $message = '';
+    foreach($msgArray as $ms) {
+      $message .= $ms;
+    }
+    if(isset($thanks) && $thanks !== false) {
+      $message .= PHP_EOL . PHP_EOL;
+      $message .= '-------------------------------------' . PHP_EOL;
+      $message .= 'Hetzner Serverboerse notifier bot has been written by Rick Bakker' . PHP_EOL;
+      $message .= '-------------------------------------' . PHP_EOL;
+    }
+
     $client = new \RocketChatPhp\Client($host, $token);
     $client->payload([
         'text' => $message
@@ -96,5 +111,21 @@ if(count($msgArray) < 0) {
       $queue = $queue->embed($embed);
     }
     $queue->send();
+  } elseif($client == 'raw') {
+    $message = '';
+    foreach($msgArray as $ms) {
+      $message .= $ms;
+    }
+    if(isset($thanks) && $thanks !== false) {
+      $message .= PHP_EOL . PHP_EOL;
+      $message .= '-------------------------------------' . PHP_EOL;
+      $message .= 'Hetzner Serverboerse notifier bot has been written by Rick Bakker' . PHP_EOL;
+      $message .= '-------------------------------------' . PHP_EOL;
+    }
+    echo $message;
   }
+}
+
+if($caching) {
+  file_put_contents('cache.txt', $cache);
 }
