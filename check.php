@@ -1,6 +1,11 @@
 <?php
 require 'vendor/autoload.php';
-require 'config.php';
+
+use \HetznerNotify\ServerMessage as ServerMessage;
+use \HetznerNotify\Config as Config;
+
+// load configuration
+$config = new Config(true);
 
 $cache = "";
 
@@ -26,7 +31,7 @@ $err = curl_error($curl);
 
 curl_close($curl);
 
-if($caching && file_exists('cache.txt')) {
+if($config->get('cache') && file_exists('cache.txt')) {
   $contents = file_get_contents('cache.txt');
   $items = explode(PHP_EOL, $contents);
 }
@@ -39,8 +44,8 @@ if ($err) {
   $sortedList = [];
   foreach($data as $keyId => $server) {
     $cache .= $server->key . PHP_EOL;
-    if($server->ram >= $minRam && $server->price <= $maxPrice) {
-        if(!$caching or !in_array($server->key, $items)) {
+    if($server->ram >= $config->get('min_ram') && $server->price <= $config->get('max_price')) {
+        if(!$config->get('cache') or !in_array($server->key, $items)) {
           $sortedList[$keyId] = $server->cpu_benchmark;
         }
     }
@@ -50,17 +55,17 @@ if ($err) {
 $msgArray = [];
 
 arsort($sortedList);
-$sortedList = array_slice($sortedList, 0, $maxList, true);
+$sortedList = array_slice($sortedList, 0, $config->get('max_list'), true);
 $i = 0;
 foreach($sortedList as $keyId => $bench) {
   $server = $data[$keyId];
   if($i == 0) {
     $message = '';
-    $message .= $mention;
+    $message .= $config->get('mention');
     $i = 1;
   }
 
-  $msgArray[] = (new \HetznerNotify\ServerMessage($server))->asString();
+  $msgArray[] = (new ServerMessage($server, $config->get('vat')))->asString();
 }
 
 if(count($msgArray) < 1) {
@@ -73,19 +78,19 @@ if(count($msgArray) < 1) {
     foreach($msgArray as $ms) {
       $message .= $ms;
     }
-    if(isset($thanks) && $thanks !== false) {
+    if($config->get('thanks') !== false) {
       $message .= PHP_EOL . PHP_EOL;
       $message .= '-------------------------------------' . PHP_EOL;
       $message .= 'Hetzner Serverboerse notifier bot has been written by Rick Bakker' . PHP_EOL;
       $message .= '-------------------------------------' . PHP_EOL;
     }
 
-    $client = new \RocketChatPhp\Client($host, $token);
+    $client = new \RocketChatPhp\Client($config->get('host'), $config->get('token'));
     $client->payload([
         'text' => $message
     ]);
   } elseif($client == 'discord') {
-    $webhook = new \DiscordWebhooks\Client($discord_webhook_url);
+    $webhook = new \DiscordWebhooks\Client($config->get('discord_webhook_url'));
     $embed = new \DiscordWebhooks\Embed();
     $embed->description($message);
     $message .= 'I have found deals you might find interesting!';
@@ -101,7 +106,7 @@ if(count($msgArray) < 1) {
     foreach($msgArray as $ms) {
       $message .= $ms;
     }
-    if(isset($thanks) && $thanks !== false) {
+    if($config->get('thanks') !== false) {
       $message .= PHP_EOL . PHP_EOL;
       $message .= '-------------------------------------' . PHP_EOL;
       $message .= 'Hetzner Serverboerse notifier bot has been written by Rick Bakker' . PHP_EOL;
@@ -111,6 +116,6 @@ if(count($msgArray) < 1) {
   }
 }
 
-if($caching) {
+if($config->get('cache')) {
   file_put_contents('cache.txt', $cache);
 }
