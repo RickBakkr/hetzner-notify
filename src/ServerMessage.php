@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dangenendt
- * Date: 05.10.18
- * Time: 21:13
- */
-
 namespace HetznerNotify;
 
 use stdClass;
