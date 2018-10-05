@@ -49,7 +49,7 @@ class ServerMessage
             . PHP_EOL
             . 'Details: ' . PHP_EOL
             . $this->getDescription($this->server->description)
-            . PHP_EOL
+            . PHP_EOL . PHP_EOL
             . 'Specials: ' . $this->getSpeciaĺs($this->server->specials) . PHP_EOL
             . PHP_EOL
             . 'Dedicated is located in: ' . array_shift($this->server->datacenter) . ' ' . $flag . PHP_EOL
