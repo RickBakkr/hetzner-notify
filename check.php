@@ -9,47 +9,29 @@ $config = new Config(true);
 
 $cache = "";
 
-$curl = curl_init();
-
-curl_setopt_array($curl, array(
-  CURLOPT_URL => "https://www.hetzner.com/a_hz_serverboerse/live_data.json",
-  CURLOPT_RETURNTRANSFER => true,
-  CURLOPT_ENCODING => "",
-  CURLOPT_MAXREDIRS => 10,
-  CURLOPT_TIMEOUT => 30,
-  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-  CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13',
-  CURLOPT_CUSTOMREQUEST => "GET",
-  CURLOPT_HTTPHEADER => array(
-    "Cache-Control: no-cache",
-    "X-Kind-Regards-From: Rick B. - Hetzner <3"
-  ),
-));
-
-$response = curl_exec($curl);
-$err = curl_error($curl);
-
-curl_close($curl);
+// get source from hetzner
+$client = new \GuzzleHttp\Client();
+$res = $client->request('GET', 'https://www.hetzner.com/a_hz_serverboerse/live_data.json');
+if ($res->getStatusCode() != '200') {
+    echo "can't load hetzner data! Error ".$res->getStatusCode().die();
+}
+$data = json_decode($res->getBody());
+$data = $data->server;
 
 if($config->get('cache') && file_exists('cache.txt')) {
   $contents = file_get_contents('cache.txt');
   $items = explode(PHP_EOL, $contents);
 }
 
-if ($err) {
-  echo "cURL Error #:" . $err;
-} else {
-  $data = json_decode($response);
-  $data = $data->server;
-  $sortedList = [];
-  foreach($data as $keyId => $server) {
+$sortedList = [];
+foreach($data as $keyId => $server)
+{
     $cache .= $server->key . PHP_EOL;
-    if($server->ram >= $config->get('min_ram') && $server->price <= $config->get('max_price')) {
-        if(!$config->get('cache') or !in_array($server->key, $items)) {
+    if ($server->ram >= $config->get('min_ram') && $server->price <= $config->get('max_price')) {
+        if (!$config->get('cache') or !in_array($server->key, $items)) {
           $sortedList[$keyId] = $server->cpu_benchmark;
         }
     }
-  }
 }
 
 $msgArray = [];
