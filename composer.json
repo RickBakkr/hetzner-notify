@@ -2,5 +2,8 @@
     "require": {
         "bt/rocketchat-php": "^1.1",
         "nopjmp/discord-webhooks": "^0.3.1"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master"
     }
 }
