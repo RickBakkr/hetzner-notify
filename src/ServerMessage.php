@@ -61,6 +61,10 @@ class ServerMessage
             . PHP_EOL . PHP_EOL;
     }
 
+    /**
+     * @param array $descriptions
+     * @return string
+     */
     private function getDescription(array $descriptions)
     {
         return implode(PHP_EOL, $descriptions);
