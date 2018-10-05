@@ -24,8 +24,6 @@ curl_setopt_array($curl, array(
 $response = curl_exec($curl);
 $err = curl_error($curl);
 
-$vatPRC = (100+$vat) / 100;
-
 curl_close($curl);
 
 if($caching && file_exists('cache.txt')) {
@@ -61,21 +59,8 @@ foreach($sortedList as $keyId => $bench) {
     $message .= $mention;
     $i = 1;
   }
-  $flag = ':de:';
-  if ($server->datacenter[1] == 'HEL') {
-    $flag = ':fi:';
-  }
-  $msg = '** HETZNER DEAL FOUND **' . PHP_EOL;
-  $msg .= $server->freetext . PHP_EOL;
-  $msg .= 'CPU Benchmark: ' . $server->cpu_benchmark . PHP_EOL;
-  $msg .= PHP_EOL;
-  $msg .= 'Dedicated is located in: ' . array_shift($server->datacenter) . ' ' . $flag . PHP_EOL;
-  $msg .= PHP_EOL;
-  $msg .= 'Cost is: €' . $server->price . ' (approx. €'  . $server->price*$vatPRC  . ' incl. ' . $vat . '% MwSt) ' . PHP_EOL;
-  $msg .= PHP_EOL;
-  $msg .= 'https://robot.your-server.de/order/marketConfirm/' . $server->key . PHP_EOL;
-  $msg .= PHP_EOL . PHP_EOL;
-  $msgArray[] = $msg;
+
+  $msgArray[] = (new \HetznerNotify\ServerMessage($server))->asString();
 }
 
 if(count($msgArray) < 1) {
