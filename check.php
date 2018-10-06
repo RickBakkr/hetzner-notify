@@ -10,27 +10,29 @@ $config = new Config(true);
 $cache = "";
 
 // get source from hetzner
-$client = new \GuzzleHttp\Client();
-$res = $client->request('GET', 'https://www.hetzner.com/a_hz_serverboerse/live_data.json');
+$guzzleClient = new \GuzzleHttp\Client();
+$res = $guzzleClient->request('GET', 'https://www.hetzner.com/a_hz_serverboerse/live_data.json');
 if ($res->getStatusCode() != '200') {
     echo "can't load hetzner data! Error ".$res->getStatusCode().die();
 }
 $data = json_decode($res->getBody());
 $data = $data->server;
 
+$items = [];
 if($config->get('cache') && file_exists('cache.txt')) {
   $contents = file_get_contents('cache.txt');
   $items = explode(PHP_EOL, $contents);
 }
 
+$filteredServers = (new \HetznerNotify\ServerFilterService($data, $config->get('filter')))
+    ->process()
+    ->getServers();
+
 $sortedList = [];
-foreach($data as $keyId => $server)
-{
+foreach($filteredServers as $keyId => $server) {
     $cache .= $server->key . PHP_EOL;
-    if ($server->ram >= $config->get('min_ram') && $server->price <= $config->get('max_price')) {
-        if (!$config->get('cache') or !in_array($server->key, $items)) {
-          $sortedList[$keyId] = $server->cpu_benchmark;
-        }
+    if (!$config->get('cache') or !in_array($server->key, $items)) {
+      $sortedList[$keyId] = $server->cpu_benchmark;
     }
 }
 
@@ -40,7 +42,7 @@ arsort($sortedList);
 $sortedList = array_slice($sortedList, 0, $config->get('max_list'), true);
 $i = 0;
 foreach($sortedList as $keyId => $bench) {
-  $server = $data[$keyId];
+  $server = $filteredServers[$keyId];
   if($i == 0) {
     $message = '';
     $message .= $config->get('mention');
@@ -50,12 +52,13 @@ foreach($sortedList as $keyId => $bench) {
   $msgArray[] = (new ServerMessage($server, $config->get('vat')))->asString();
 }
 
+$notifyClient = $config->get('client');
 if(count($msgArray) < 1) {
   // Exit the script, do not fire..
   exit();
 } else {
   // We have some message to share, POST it to RC.
-  if($client == 'rocketchat') {
+  if($notifyClient == 'rocketchat') {
     $message = '';
     foreach($msgArray as $ms) {
       $message .= $ms;
@@ -71,7 +74,7 @@ if(count($msgArray) < 1) {
     $client->payload([
         'text' => $message
     ]);
-  } elseif($client == 'discord') {
+  } elseif($notifyClient == 'discord') {
     $webhook = new \DiscordWebhooks\Client($config->get('discord_webhook_url'));
     $embed = new \DiscordWebhooks\Embed();
     $embed->description($message);
@@ -83,7 +86,7 @@ if(count($msgArray) < 1) {
       $queue = $queue->embed($embed);
     }
     $queue->send();
-  } elseif($client == 'raw') {
+  } elseif($notifyClient == 'raw') {
     $message = '';
     foreach($msgArray as $ms) {
       $message .= $ms;
