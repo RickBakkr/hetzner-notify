@@ -8,6 +8,10 @@ use stdClass;
  */
 class ServerMessage
 {
+    private const FLAG_DE = ':de:';
+    private const FLAG_FI = ':fi:';
+    private const VAT_DEFAULT = 21;
+
     /** @var stdClass */
     private $server;
 
@@ -17,7 +21,7 @@ class ServerMessage
     /** @var float */
     private $vatPRC;
 
-    public function __construct(stdClass $server, int $vat = 21)
+    public function __construct(stdClass $server, int $vat = self::VAT_DEFAULT)
     {
         $this->server = $server;
         $this->vat = $vat;
@@ -30,9 +34,9 @@ class ServerMessage
      */
     public function asString()
     {
-        $flag = ':de:';
+        $flag = self::FLAG_DE;
         if ($this->server->datacenter[1] == 'HEL') {
-            $flag = ':fi:';
+            $flag = self::FLAG_FI;
         }
 
         return
