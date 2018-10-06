@@ -66,7 +66,7 @@ if(count($msgArray) < 1) {
     if($config->get('thanks') !== false) {
       $message .= PHP_EOL . PHP_EOL;
       $message .= '-------------------------------------' . PHP_EOL;
-      $message .= 'Hetzner Serverboerse notifier bot has been written by Rick Bakker' . PHP_EOL;
+      $message .= 'Hetzner Serverboerse notifier bot has been written by Rick Bakker and a bunch of other cool dudes :) ' . PHP_EOL;
       $message .= '-------------------------------------' . PHP_EOL;
     }
 
