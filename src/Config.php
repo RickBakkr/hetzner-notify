@@ -17,6 +17,9 @@ class Config
         }
     }
 
+    /**
+     * @return bool
+     */
     public function load()
     {
         if (file_exists(self::CONFIG_FILE)) {
@@ -30,10 +33,14 @@ class Config
         return false;
     }
 
+    /**
+     * @param null $key
+     * @return mixed|null
+     */
     public function get($key = null)
     {
         if ($key === null) {
-            return $_config;
+            return $this->_config;
         }
 
         if (array_key_exists($key, $this->_config)) {
@@ -43,6 +50,10 @@ class Config
         return null;
     }
 
+    /**
+     * @param $key
+     * @param $value
+     */
     public function set($key, $value)
     {
         $this->_config[$key] = $value;

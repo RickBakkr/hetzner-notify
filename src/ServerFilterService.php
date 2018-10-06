@@ -1,57 +1,43 @@
 <?php
 namespace HetznerNotify;
 
-use HetznerNotify\Filter\AbstractFilter;
+use HetznerNotify\Filter\Comparator\ComparatorFactory;
 use HetznerNotify\Filter\Comparator\ComparatorInterface;
 use HetznerNotify\Filter\Comparator\GreaterOrEqualComparator;
 use HetznerNotify\Filter\Comparator\LessOrEqualComparator;
-use HetznerNotify\Filter\FilterInterface;
-use HetznerNotify\Filter\PriceFilter;
-use HetznerNotify\Filter\RamFilter;
+use HetznerNotify\Filter\Filter;
 
 class ServerFilterService
 {
-    /**
-     * array of all filter classes - all new filters must be added here
-     */
-    const FILTER_CLASSES = [
-        'price' => PriceFilter::class,
-        'ram'   => RamFilter::class
-    ];
-
     private $servers = [];
-    private $filters = [];
+    private $filter = [];
 
     /**
      * ServerFilter constructor.
      * @param array $servers
-     * @param array $filters
+     * @param array $filter
      * @return ServerFilterService
      */
-    public function __construct(array $servers, array $filters)
+    public function __construct(array $servers, array $filter)
     {
         $this->servers = $servers;
-        $this->filters = $filters;
+        $this->filter = $filter;
         return $this;
     }
 
     /**
+     * executes all configured filter from config
      * @return $this
      */
     public function process()
     {
         $result = [];
         foreach ($this->servers as $keyId => $server) {
-            /** @var AbstractFilter|FilterInterface $class */
-            foreach (self::FILTER_CLASSES as $filterName => $class) {
-
-                $amount = $this->filters[$filterName]['amount'];
-                $comparator = $this->getComparatorByOperator($this->filters[$filterName]['operator']);
-                /** @var FilterInterface $filter */
-                $filter = new $class($filterName, $amount);
-
-                $server = $filter->filter($server, $comparator);
-
+            foreach ($this->filter as $filterName => $filterConfig) {
+                $value = $this->getFilterValue($filterConfig);
+                $comparator = ComparatorFactory::getComparatorByOperator($filterConfig['operator']);
+                $filter = new Filter($filterName, $value);
+                $server = $filter->process($server, $comparator);
                 if (empty($server)) {
                     break;
                 }
@@ -77,25 +63,15 @@ class ServerFilterService
     }
 
     /**
-     * @param string $operator
-     * @return ComparatorInterface
+     * @param array $filterConfig
+     * @return mixed
      */
-    private function getComparatorByOperator($operator)
+    private function getFilterValue(array $filterConfig)
     {
-        $comparator = null;
-        switch ($operator) {
-            case '>=':
-                $comparator = new GreaterOrEqualComparator();
-                break;
-            case '<=':
-                $comparator = new LessOrEqualComparator();
-                break;
-            default:
-                //default comparator if nothing is set in config
-                $comparator = new GreaterOrEqualComparator();
-                break;
+        if (isset($filterConfig['bool'])) {
+            return $filterConfig['bool'];
+        } else {
+            return $filterConfig['amount'];
         }
-
-        return $comparator;
     }
 }

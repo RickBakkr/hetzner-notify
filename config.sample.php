@@ -21,11 +21,34 @@ return array(
     // BOTH of these conditions MUST be fulfilled by a server in order for you to be notified.
     'vat' => 21,
 
-    // Maximum price for a server in the auction that you wish to be notified of. Price is in Euros (€).
-    'max_price' => 20,
+    // ALL filter MUST be fulfilled by a server in order for you to be notified.
+    'filter' => [
+        /**
+         * here you can configure all filter which will be applied on the Hetzner response.
+         * You can use all fields which are in the main server-object (exact names needed as array key) e.g.:
+         * - cpu_benchmark
+         * - is_ecc
+         * - hdd_size
+         * - hdd_count
+         * (see Hetzner response for more fields)
+         *
+         * available operators:
+         * - ">=" (greater equals)
+         * - "<=" (less equals)
+         * - "==" (equals) - needed for bool comparison (see example below)
+         *
+         * Examples:
+         *
+         * 'hdd_size' => ['amount' => 2048, 'operator' => '<='],
+         * 'is_ecc' => ['bool' => true, 'operator' => '=='],
+         */
 
-    // Minimum amount of RAM (in GB) a server must have in order for you to be notified.
-    'min_ram' => 5,
+        //Maximum price for a server in the auction that you wish to be notified of. Price is in Euros (€).
+        'price' => ['amount' => 30, 'operator' => '<='],
+
+        //Minimum amount of RAM (in GB) a server must have in order for you to be notified.
+        'ram' => ['amount' => 1, 'operator' => '>='],
+    ],
 
     // Maximum amount of new servers to show. SETTING THIS VALUE TOO HIGH WILL CAUSE HIGH CPU USAGE ON THE ROCKET.CHAT CLIENT AND SERVER!
     'max_list' => 10,

@@ -1,8 +1,15 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: dangenendt
+ * Date: 06.10.18
+ * Time: 18:34
+ */
+
 namespace HetznerNotify\Filter\Comparator;
 
 
-class GreaterOrEqualComparator implements ComparatorInterface
+class EqualComparator implements ComparatorInterface
 {
     /**
      * @param $valueToCompare
@@ -11,7 +18,7 @@ class GreaterOrEqualComparator implements ComparatorInterface
      */
     public function compare($valueToCompare, $serverValue)
     {
-        if ($serverValue >= $valueToCompare) {
+        if ($serverValue == $valueToCompare) {
             return true;
         }
 

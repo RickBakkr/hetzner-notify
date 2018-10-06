@@ -3,6 +3,11 @@ namespace HetznerNotify\Filter\Comparator;
 
 class LessOrEqualComparator implements ComparatorInterface
 {
+    /**
+     * @param $valueToCompare
+     * @param $serverValue
+     * @return bool
+     */
     public function compare($valueToCompare, $serverValue)
     {
         if ($serverValue <= $valueToCompare) {

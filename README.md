@@ -41,3 +41,8 @@ I can't help you without more info. If you think it's a bug with the code, pleas
 ## Caching
 
 Please make sure to create a file named `cache.txt` if you plan to use the cached functionalities. Note: this may require you to set custom permissions in order for the script to have persmissions to write the cached auction IDs.
+
+## Filtering
+Servers can be filtered by all values located on the first level of the server object (ram, hdd_size, etc.).
+You can see which fields are still available in a response. 
+To see how the filtering works, there are corresponding examples for each configurable filter in the filter block in config.sample.php. 
