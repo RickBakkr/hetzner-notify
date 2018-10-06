@@ -37,6 +37,9 @@ if ($err) {
   $data = json_decode($response);
   $data = $data->server;
   $sortedList = [];
+
+  $filter = (new \HetznerNotify\ServerFilterService($data, $filters))->process()->getServers();
+
   foreach($data as $keyId => $server) {
     $cache .= $server->key . PHP_EOL;
     if($server->ram >= $minRam && $server->price <= $maxPrice) {
